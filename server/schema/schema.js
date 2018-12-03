@@ -9,9 +9,10 @@ const {
   GraphQLInt
 } = graphql;
 
+//dummy data
 var books = [
-  { name: 'lord of the rings', genre: 'fantasy', id: '1' },
-  { name: 'the matrix', genre: 'Sci-Fi', id: '2' }
+  { name: 'lord of the rings', genre: 'fantasy', id: '1', authorId: '1' },
+  { name: 'the matrix', genre: 'Sci-Fi', id: '2', authorId: '2' }
 ];
 
 var authors = [
@@ -19,15 +20,8 @@ var authors = [
   { name: 'Brandon Sanderson', age: 38, id: '2' }
 ];
 
-const BookType = new GraphQLObjectType({
-  name: 'Book',
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    genre: { type: GraphQLString }
-  })
-});
-
+//Model definitions and fields types
+//Author
 const AuthorType = new GraphQLObjectType({
   name: 'Author',
   fields: () => ({
@@ -37,6 +31,25 @@ const AuthorType = new GraphQLObjectType({
   })
 });
 
+//Book
+const BookType = new GraphQLObjectType({
+  name: 'Book',
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    genre: { type: GraphQLString },
+    //association to Author
+    author: {
+      type: AuthorType,
+      resolve(parent, args) {
+        console.log(parent);
+        return _.find(authors, { id: parent.authorId });
+      }
+    }
+  })
+});
+
+//Query endpoint
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
@@ -52,6 +65,7 @@ const RootQuery = new GraphQLObjectType({
       type: AuthorType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
+        //code to get data from db/other source
         return _.find(authors, { id: args.id });
       }
     }
